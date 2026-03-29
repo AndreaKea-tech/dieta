@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="La mia Dieta">
+<meta name="theme-color" content="#1D9E75">
+<title>La mia Dieta</title>
+<style>
+:root{
+  --bg:#f5f4f0;--surface:#fff;--surface2:#f0ede8;
+  --border:rgba(0,0,0,0.09);--border2:rgba(0,0,0,0.16);
+  --text:#1a1a1a;--text2:#6b6b6b;--text3:#a0a0a0;
+  --green:#1D9E75;--green-bg:#e6f7f1;--green-text:#0a6644;
+  --red:#E24B4A;--red-bg:#fdeaea;--red-text:#9e2020;
+  --amber:#c47a00;--amber-bg:#fef3dc;
+  --blue:#2477cc;--blue-bg:#e8f1fb;
+  --r:14px;--rsm:9px;
+}
+@media(prefers-color-scheme:dark){
+  :root{
+    --bg:#111;--surface:#1c1c1a;--surface2:#252523;
+    --border:rgba(255,255,255,0.09);--border2:rgba(255,255,255,0.18);
+    --text:#f0ede8;--text2:#9a9a95;--text3:#666;
+    --green-bg:#052e22;--green-text:#4ecfa0;
+    --red-bg:#3a1010;--red-text:#f09595;
+    --amber-bg:#3a2800;--blue-bg:#0d2440;
+  }
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden}
+body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);font-size:15px}
+
+/* LAYOUT */
+.app{display:flex;flex-direction:column;height:100vh;height:100dvh}
+
+/* HEADER */
+.hdr{background:var(--green);padding:env(safe-area-inset-top,40px) 0 0;flex-shrink:0}
+.hdr-top{padding:8px 18px 4px;display:flex;align-items:baseline;gap:10px}
+.hdr-top h1{font-size:19px;font-weight:700;color:#fff}
+.hdr-sub{font-size:12px;color:rgba(255,255,255,0.72)}
+.tabs{display:flex;padding:0 6px}
+.tab{flex:1;padding:11px 4px 10px;border:none;background:rgba(255,255,255,0.13);
+  border-radius:10px 10px 0 0;color:rgba(255,255,255,0.65);
+  font-size:13px;font-weight:600;cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;gap:3px;
+  transition:background .15s,color .15s;margin:0 2px}
+.tab svg{width:19px;height:19px;stroke-width:2;fill:none;stroke:currentColor}
+.tab.on{background:var(--bg);color:var(--green)}
+
+/* CONTENT */
+.pages{flex:1;overflow:hidden;position:relative}
+.page{position:absolute;inset:0;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  padding:14px 14px 24px;display:none}
+.page.on{display:block}
+
+/* CARD */
+.card{background:var(--surface);border-radius:var(--r);border:1px solid var(--border);
+  padding:15px;margin-bottom:11px}
+.card-ttl{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;
+  letter-spacing:.05em;margin-bottom:11px}
+
+/* PESO HERO */
+.hero{text-align:center;padding:6px 0 10px}
+.hero-num{font-size:60px;font-weight:700;line-height:1;letter-spacing:-3px}
+.hero-unit{font-size:20px;color:var(--text2);font-weight:400}
+.hero-sub{font-size:12px;color:var(--text2);margin-top:5px}
+.badge{display:inline-block;margin-top:9px;padding:5px 14px;border-radius:20px;
+  font-size:13px;font-weight:600;background:var(--green-bg);color:var(--green-text)}
+.badge.ok{background:var(--green);color:#fff}
+
+.stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-top:12px}
+.stat{background:var(--surface2);border-radius:var(--rsm);padding:9px 6px;text-align:center}
+.stat-v{font-size:16px;font-weight:700}
+.stat-l{font-size:10px;color:var(--text3);margin-top:2px}
+.pos{color:var(--red)}.neg{color:var(--green)}
+
+/* SVG CHART */
+.chart-wrap{margin-top:12px;width:100%;overflow:hidden}
+.chart-wrap svg{display:block;width:100%}
+
+/* FORM */
+.row{display:flex;gap:8px}
+input[type=number],input[type=text],select{
+  flex:1;background:var(--surface2);border:1px solid var(--border2);
+  border-radius:var(--rsm);color:var(--text);font-size:15px;
+  padding:11px 12px;outline:none;font-family:inherit;
+  -webkit-appearance:none;appearance:none}
+input:focus{border-color:var(--green)}
+.btn{padding:11px 16px;border-radius:var(--rsm);border:1px solid var(--border2);
+  background:transparent;color:var(--text);font-size:14px;font-weight:600;
+  cursor:pointer;white-space:nowrap;font-family:inherit}
+.btn:active{opacity:.7}
+.btn-g{background:var(--green);color:#fff;border-color:transparent}
+.btn-sm{padding:7px 11px;font-size:13px}
+.btn-ghost{background:var(--surface2);color:var(--text2);border-color:transparent}
+.btn-del{background:var(--red-bg);color:var(--red-text);border-color:transparent}
+
+/* LOG */
+.log-item{display:flex;align-items:center;gap:7px;padding:9px 0;
+  border-bottom:1px solid var(--border);font-size:14px}
+.log-item:last-child{border-bottom:none}
+.log-d{color:var(--text2);font-size:12px;flex-shrink:0}
+.log-v{font-weight:700;margin-left:auto;margin-right:4px}
+.pill{font-size:11px;font-weight:600;padding:2px 7px;border-radius:12px;flex-shrink:0}
+.pill-dn{background:var(--green-bg);color:var(--green-text)}
+.pill-up{background:var(--red-bg);color:var(--red-text)}
+.del-x{background:none;border:none;color:var(--text3);font-size:19px;
+  cursor:pointer;padding:0 3px;line-height:1;flex-shrink:0}
+.del-x:active{color:var(--red)}
+.empty{color:var(--text3);font-size:13px;text-align:center;padding:18px 0}
+
+/* PROGRESS */
+.prog{height:7px;background:var(--surface2);border-radius:4px;overflow:hidden;margin:9px 0 5px}
+.prog-f{height:100%;border-radius:4px;background:var(--green);transition:width .4s ease}
+
+/* MEAL GRID */
+.mg{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.mc{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);
+  padding:13px;cursor:pointer;user-select:none;transition:border-color .15s,background .15s}
+.mc:active{opacity:.75}
+.mc.wide{grid-column:span 2;display:flex;align-items:center;gap:12px}
+.mc.wide .mc-body{flex:1}
+.mc.done{background:var(--green-bg);border-color:var(--green)}
+.mi{font-size:22px;margin-bottom:5px}
+.mc.wide .mi{margin-bottom:0;font-size:26px}
+.mn{font-size:13px;font-weight:700}
+.mt{font-size:11px;color:var(--text3);margin-top:1px}
+.md{font-size:11px;color:var(--text2);margin-top:4px;line-height:1.4}
+.ck{width:21px;height:21px;border-radius:50%;border:1.5px solid var(--border2);
+  display:flex;align-items:center;justify-content:center;
+  color:transparent;font-size:12px;flex-shrink:0;margin-top:9px;transition:all .15s}
+.mc.wide .ck{margin-top:0}
+.done .ck{background:var(--green);border-color:var(--green);color:#fff}
+
+/* TIPS */
+.tips{display:flex;flex-direction:column;gap:6px}
+.tip{display:flex;align-items:flex-start;gap:9px;font-size:13px;color:var(--text2);
+  background:var(--surface2);border-radius:var(--rsm);padding:9px 11px}
+
+/* SPESA */
+.sf{display:flex;flex-direction:column;gap:8px;margin-bottom:10px}
+.r2{display:flex;gap:8px}
+.si-row{display:flex;align-items:center;gap:9px;padding:9px 0;
+  border-bottom:1px solid var(--border);font-size:14px}
+.si-row:last-child{border-bottom:none}
+.si-row input[type=checkbox]{width:19px;height:19px;accent-color:var(--green);
+  cursor:pointer;flex-shrink:0}
+.si-row span{flex:1}
+.si-row.done span{text-decoration:line-through;color:var(--text3)}
+.cat-h{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;
+  letter-spacing:.05em;margin:13px 0 4px;padding-bottom:4px;border-bottom:1px solid var(--border)}
+.cat-h:first-child{margin-top:0}
+.btn-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- HEADER -->
+  <div class="hdr">
+    <div class="hdr-top">
+      <h1 id="ttl">Peso</h1>
+      <span class="hdr-sub" id="sub">obiettivo: 77 kg</span>
+    </div>
+    <div class="tabs">
+      <button class="tab on" id="t-peso" onclick="go('peso')">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l2.5 2.5"/></svg>
+        Peso
+      </button>
+      <button class="tab" id="t-dieta" onclick="go('dieta')">
+        <svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h4"/></svg>
+        Dieta
+      </button>
+      <button class="tab" id="t-spesa" onclick="go('spesa')">
+        <svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+        Spesa
+      </button>
+    </div>
+  </div>
+
+  <!-- PAGINE -->
+  <div class="pages">
+
+    <!-- PESO -->
+    <div class="page on" id="p-peso">
+      <div class="card">
+        <div class="hero">
+          <div><span class="hero-num" id="cw">—</span><span class="hero-unit"> kg</span></div>
+          <div class="hero-sub" id="wsub">Nessuna pesata</div>
+          <div class="badge" id="wmanca" style="display:none"></div>
+        </div>
+        <div class="stats">
+          <div class="stat"><div class="stat-v" id="ss">—</div><div class="stat-l">inizio</div></div>
+          <div class="stat"><div class="stat-v" id="sd">—</div><div class="stat-l">variazione</div></div>
+          <div class="stat"><div class="stat-v" id="sp">—</div><div class="stat-l">% traguardo</div></div>
+        </div>
+        <div class="chart-wrap" id="chart-wrap">
+          <svg id="chart" viewBox="0 0 320 160" style="height:170px"></svg>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-ttl">registra pesata</div>
+        <div class="row">
+          <input type="number" id="nw" placeholder="es. 85.4" step="0.1" min="40" max="200" inputmode="decimal">
+          <button class="btn btn-g" onclick="addW()">+ Aggiungi</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-ttl">storico pesate</div>
+        <div id="wlog"><div class="empty">Nessuna pesata ancora</div></div>
+      </div>
+    </div>
+
+    <!-- DIETA -->
+    <div class="page" id="p-dieta">
+      <div class="card">
+        <div class="card-ttl">pasti di oggi</div>
+        <div class="prog"><div class="prog-f" id="dp" style="width:0%"></div></div>
+        <div style="font-size:12px;color:var(--text2)" id="dc">0 / 5 completati</div>
+      </div>
+
+      <div class="mg">
+        <div class="mc" id="mc-c" onclick="tm('c')">
+          <div class="mi">🌅</div><div class="mn">Colazione</div>
+          <div class="mt">07:00</div>
+          <div class="md">Pane integrale + latte + frutto</div>
+          <div class="ck">✓</div>
+        </div>
+        <div class="mc" id="mc-s1" onclick="tm('s1')">
+          <div class="mi">🍎</div><div class="mn">Spuntino</div>
+          <div class="mt">10:00</div>
+          <div class="md">Frutto o yogurt naturale</div>
+          <div class="ck">✓</div>
+        </div>
+        <div class="mc wide" id="mc-p" onclick="tm('p')">
+          <div class="mi">🍽️</div>
+          <div class="mc-body">
+            <div class="mn">Pranzo</div>
+            <div class="mt">12:30</div>
+            <div class="md">¼ cereali + ¼ proteine + ½ verdure — frutto solo negli spuntini</div>
+          </div>
+          <div class="ck">✓</div>
+        </div>
+        <div class="mc wide" id="mc-s2" onclick="tm('s2')">
+          <div class="mi">🍊</div>
+          <div class="mc-body">
+            <div class="mn">Merenda</div>
+            <div class="mt">16:00</div>
+            <div class="md">Frutto o yogurt naturale</div>
+          </div>
+          <div class="ck">✓</div>
+        </div>
+        <div class="mc wide" id="mc-cn" onclick="tm('cn')">
+          <div class="mi">🌙</div>
+          <div class="mc-body">
+            <div class="mn">Cena</div>
+            <div class="mt">19:30</div>
+            <div class="md">Piatto piccolo: verdure + proteine, senza farinacei</div>
+          </div>
+          <div class="ck">✓</div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:9px">
+        <div class="card-ttl">regole chiave</div>
+        <div class="tips">
+          <div class="tip"><span>💧</span><span>Almeno 1,5 litri di acqua al giorno</span></div>
+          <div class="tip"><span>🫒</span><span>Max 2 cucchiai di olio EVO al giorno</span></div>
+          <div class="tip"><span>🚫</span><span>Non mangiare dopo cena</span></div>
+          <div class="tip"><span>🍎</span><span>Frutta negli spuntini, non a fine pasto</span></div>
+          <div class="tip"><span>🐟</span><span>Almeno 2 porzioni di pesce a settimana</span></div>
+          <div class="tip"><span>🥩</span><span>Max 3 porzioni di carne a settimana</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SPESA -->
+    <div class="page" id="p-spesa">
+      <div class="card">
+        <div class="card-ttl">aggiungi articolo</div>
+        <div class="sf">
+          <input type="text" id="si" placeholder="nome articolo..." onkeydown="if(event.key==='Enter')addItem()">
+          <div class="r2">
+            <select id="sc">
+              <option value="Proteine">Proteine</option>
+              <option value="Verdure">Verdure</option>
+              <option value="Frutta">Frutta</option>
+              <option value="Cereali">Cereali</option>
+              <option value="Latticini">Latticini</option>
+              <option value="Legumi">Legumi</option>
+              <option value="Altro">Altro</option>
+            </select>
+            <button class="btn btn-g" onclick="addItem()" style="font-size:20px;padding:11px 18px">+</button>
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-sm btn-ghost" onclick="loadDiet()">📋 Lista dieta</button>
+          <button class="btn btn-sm btn-ghost" onclick="clearDone()">Rimuovi spuntati</button>
+          <button class="btn btn-sm btn-del" onclick="clearAll()">Svuota</button>
+        </div>
+      </div>
+      <div class="card">
+        <div id="shop-list"><div class="empty">Lista vuota — tocca "Lista dieta"</div></div>
+      </div>
+    </div>
+
+  </div><!-- /pages -->
+</div><!-- /app -->
+
+<script>
+'use strict';
+const OBJ = 77;
+const WK = 'da4_w', MK = 'da4_m', SK = 'da4_s';
+let W = [], M = {}, S = [];
+
+/* ---- STORAGE ---- */
+function load() {
+  try { W = JSON.parse(localStorage.getItem(WK) || '[]'); } catch(e) { W = []; }
+  try { const m = JSON.parse(localStorage.getItem(MK)||'{}'); M = m.d===tod()?m.v:{}; } catch(e) { M={}; }
+  try { S = JSON.parse(localStorage.getItem(SK) || '[]'); } catch(e) { S = []; }
+}
+function sv(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); }catch(e){} }
+function tod(){ return new Date().toISOString().slice(0,10); }
+
+/* ---- NAV ---- */
+const PAGES = {
+  peso:  { ttl:'Peso',  sub:'obiettivo: 77 kg' },
+  dieta: { ttl:'Dieta', sub: new Date().toLocaleDateString('it-IT',{weekday:'long',day:'numeric',month:'long'}) },
+  spesa: { ttl:'Spesa', sub:'lista della settimana' }
+};
+
+function go(s) {
+  // Nascondi tutte le pagine e deseleziona tutti i tab
+  document.querySelectorAll('.page').forEach(function(el){ el.classList.remove('on'); });
+  document.querySelectorAll('.tab').forEach(function(el){ el.classList.remove('on'); });
+  // Mostra pagina e tab selezionati
+  document.getElementById('p-' + s).classList.add('on');
+  document.getElementById('t-' + s).classList.add('on');
+  document.getElementById('ttl').textContent = PAGES[s].ttl;
+  document.getElementById('sub').textContent = PAGES[s].sub;
+  // Scroll top della pagina corrente
+  document.getElementById('p-' + s).scrollTop = 0;
+  if (s === 'peso') drawChart();
+}
+
+/* ---- PESO ---- */
+function addW() {
+  var v = parseFloat(document.getElementById('nw').value);
+  if (!v || v < 40 || v > 200) { alert('Inserisci un peso tra 40 e 200 kg'); return; }
+  W.unshift({ d: tod(), w: Math.round(v * 10) / 10 });
+  sv(WK, W);
+  document.getElementById('nw').value = '';
+  renderW();
+}
+function delW(i) {
+  if (!confirm('Eliminare questa pesata?')) return;
+  W.splice(i, 1);
+  sv(WK, W);
+  renderW();
+}
+function renderW() {
+  var cw = document.getElementById('cw');
+  var wsub = document.getElementById('wsub');
+  var wmanca = document.getElementById('wmanca');
+  if (!W.length) {
+    cw.textContent = '—';
+    wsub.textContent = 'Nessuna pesata';
+    wmanca.style.display = 'none';
+    document.getElementById('ss').textContent = '—';
+    document.getElementById('sd').textContent = '—';
+    document.getElementById('sp').textContent = '—';
+    drawChart(); return;
+  }
+  var cur = W[0].w;
+  var first = W[W.length - 1].w;
+  cw.textContent = cur.toFixed(1);
+  wsub.textContent = 'pesata del ' + W[0].d;
+  wmanca.style.display = 'inline-block';
+  var manca = Math.round((cur - OBJ) * 10) / 10;
+  if (manca <= 0) { wmanca.textContent = '🎉 Obiettivo raggiunto!'; wmanca.className = 'badge ok'; }
+  else { wmanca.textContent = 'Mancano ' + manca.toFixed(1) + ' kg'; wmanca.className = 'badge'; }
+  document.getElementById('ss').textContent = first.toFixed(1) + ' kg';
+  var diff = Math.round((cur - first) * 10) / 10;
+  var sdEl = document.getElementById('sd');
+  sdEl.textContent = (diff > 0 ? '+' : '') + diff.toFixed(1) + ' kg';
+  sdEl.className = 'stat-v ' + (diff < 0 ? 'neg' : diff > 0 ? 'pos' : '');
+  var tot = first - OBJ, done = first - cur;
+  var perc = tot > 0 ? Math.round(Math.max(0, Math.min(100, done / tot * 100))) : (cur <= OBJ ? 100 : 0);
+  document.getElementById('sp').textContent = perc + '%';
+  renderLog();
+  drawChart();
+}
+
+function renderLog() {
+  var el = document.getElementById('wlog');
+  if (!W.length) { el.innerHTML = '<div class="empty">Nessuna pesata</div>'; return; }
+  var html = '';
+  for (var i = 0; i < W.length; i++) {
+    var x = W[i];
+    var prev = i < W.length - 1 ? W[i+1].w : x.w;
+    var d = Math.round((x.w - prev) * 10) / 10;
+    var pill = d < 0 ? '<span class="pill pill-dn">▼ '+Math.abs(d).toFixed(1)+'</span>'
+             : d > 0 ? '<span class="pill pill-up">▲ '+d.toFixed(1)+'</span>' : '';
+    html += '<div class="log-item">'
+          + '<span class="log-d">'+x.d+'</span>'
+          + pill
+          + '<span class="log-v">'+x.w.toFixed(1)+' kg</span>'
+          + '<button class="del-x" onclick="delW('+i+')">×</button>'
+          + '</div>';
+  }
+  el.innerHTML = html;
+}
+
+/* ---- GRAFICO SVG ---- */
+function drawChart() {
+  var svg = document.getElementById('chart');
+  var W2 = W.slice().reverse(); // cronologico
+  var VW = 320, VH = 160;
+  var ml = 36, mr = 10, mt = 12, mb = 28;
+  var cw = VW - ml - mr, ch = VH - mt - mb;
+
+  if (W2.length < 2) {
+    svg.innerHTML = '<text x="160" y="85" text-anchor="middle" fill="#aaa" font-size="12" font-family="system-ui">Aggiungi almeno 2 pesate per il grafico</text>';
+    return;
+  }
+
+  var vals = W2.map(function(x){ return x.w; });
+  var minV = Math.min.apply(null, vals.concat([OBJ])) - 0.5;
+  var maxV = Math.max.apply(null, vals.concat([OBJ])) + 0.5;
+  var rng = maxV - minV || 1;
+
+  function px(i, total) { return ml + (i / (total - 1)) * cw; }
+  function py(v) { return mt + ch - ((v - minV) / rng) * ch; }
+
+  // Trend lineare (regressione)
+  var n = vals.length;
+  var sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
+  for (var i = 0; i < n; i++) { sumX += i; sumY += vals[i]; sumXY += i*vals[i]; sumX2 += i*i; }
+  var slope = (n*sumXY - sumX*sumY) / (n*sumX2 - sumX*sumX);
+  var intercept = (sumY - slope*sumX) / n;
+  var trendVals = [];
+  var extN = n + 3; // 3 punti extra proiezione
+  for (var i = 0; i < extN; i++) trendVals.push(Math.round((slope*i + intercept)*100)/100);
+  var trendMin = Math.min.apply(null, trendVals);
+  var trendMax = Math.max.apply(null, trendVals);
+  minV = Math.min(minV, trendMin - 0.2);
+  maxV = Math.max(maxV, trendMax + 0.2);
+  rng = maxV - minV || 1;
+
+  function pxE(i) { return ml + (i / (extN - 1)) * cw; } // per trend esteso
+
+  // Costruisce polyline points
+  function pts(arr, pxFn) {
+    return arr.map(function(v, i){ return pxFn(i)+','+py(v); }).join(' ');
+  }
+
+  // Y grid lines
+  var gridVals = [];
+  var step = rng > 6 ? 2 : 1;
+  var gStart = Math.ceil(minV / step) * step;
+  for (var g = gStart; g <= maxV; g += step) gridVals.push(g);
+
+  var html = '';
+
+  // Grid
+  gridVals.forEach(function(g) {
+    var y = py(g);
+    html += '<line x1="'+ml+'" y1="'+y+'" x2="'+(VW-mr)+'" y2="'+y+'" stroke="#ccc" stroke-width=".5" stroke-dasharray="3,3"/>';
+    html += '<text x="'+(ml-3)+'" y="'+(y+4)+'" text-anchor="end" font-size="9" fill="#aaa" font-family="system-ui">'+g.toFixed(1)+'</text>';
+  });
+
+  // Linea obiettivo
+  var oy = py(OBJ);
+  html += '<line x1="'+ml+'" y1="'+oy+'" x2="'+(VW-mr)+'" y2="'+oy+'" stroke="#E24B4A" stroke-width="1.5" stroke-dasharray="5,4"/>';
+  html += '<text x="'+(VW-mr+2)+'" y="'+(oy+4)+'" font-size="9" fill="#E24B4A" font-family="system-ui">77</text>';
+
+  // Area peso (fill)
+  var ptsArea = vals.map(function(v,i){ return px(i,n)+','+py(v); }).join(' ');
+  var fillPath = 'M'+px(0,n)+','+py(vals[0])+' '
+    + vals.map(function(v,i){ return 'L'+px(i,n)+','+py(v); }).join(' ')
+    + ' L'+px(n-1,n)+','+(mt+ch)+' L'+px(0,n)+','+(mt+ch)+' Z';
+  html += '<path d="'+fillPath+'" fill="rgba(29,158,117,0.09)"/>';
+
+  // Linea trend (arancione tratteggiata estesa)
+  html += '<polyline points="'+pts(trendVals, pxE)+'" fill="none" stroke="#c47a00" stroke-width="1.5" stroke-dasharray="4,3" opacity=".8"/>';
+
+  // Linea peso principale
+  html += '<polyline points="'+pts(vals, function(i){ return px(i,n); })+'" fill="none" stroke="#1D9E75" stroke-width="2.5"/>';
+
+  // Punti peso
+  for (var i = 0; i < n; i++) {
+    html += '<circle cx="'+px(i,n)+'" cy="'+py(vals[i])+'" r="3.5" fill="#1D9E75"/>';
+  }
+
+  // Etichette X (max 6)
+  var step2 = Math.max(1, Math.floor(n / 5));
+  for (var i = 0; i < n; i += step2) {
+    var lbl = W2[i].d.slice(5);
+    html += '<text x="'+px(i,n)+'" y="'+(VH-6)+'" text-anchor="middle" font-size="9" fill="#aaa" font-family="system-ui">'+lbl+'</text>';
+  }
+
+  // Legenda
+  html += '<line x1="'+ml+'" y1="10" x2="'+(ml+14)+'" y2="10" stroke="#1D9E75" stroke-width="2.5"/>';
+  html += '<text x="'+(ml+17)+'" y="13" font-size="9" fill="#555" font-family="system-ui">Peso</text>';
+  html += '<line x1="'+(ml+50)+'" y1="10" x2="'+(ml+64)+'" y2="10" stroke="#c47a00" stroke-width="1.5" stroke-dasharray="4,3"/>';
+  html += '<text x="'+(ml+67)+'" y="13" font-size="9" fill="#555" font-family="system-ui">Tendenza</text>';
+  html += '<line x1="'+(ml+118)+'" y1="10" x2="'+(ml+132)+'" y2="10" stroke="#E24B4A" stroke-width="1.5" stroke-dasharray="4,3"/>';
+  html += '<text x="'+(ml+135)+'" y="13" font-size="9" fill="#555" font-family="system-ui">Obiettivo</text>';
+
+  svg.innerHTML = html;
+}
+
+/* ---- DIETA ---- */
+function tm(id) {
+  M[id] = !M[id];
+  sv(MK, { d: tod(), v: M });
+  renderM();
+}
+function renderM() {
+  var ids = ['c','s1','p','s2','cn'];
+  var done = 0;
+  ids.forEach(function(id) {
+    var el = document.getElementById('mc-' + id);
+    if (M[id]) { el.classList.add('done'); done++; }
+    else el.classList.remove('done');
+  });
+  document.getElementById('dp').style.width = Math.round(done/5*100) + '%';
+  document.getElementById('dc').textContent = done + ' / 5 completati';
+}
+
+/* ---- SPESA ---- */
+function addItem() {
+  var n = document.getElementById('si').value.trim();
+  var c = document.getElementById('sc').value;
+  if (!n) return;
+  S.push({ n: n, c: c, ok: false });
+  sv(SK, S);
+  renderS();
+  document.getElementById('si').value = '';
+}
+function togItem(i) { S[i].ok = !S[i].ok; sv(SK, S); renderS(); }
+function delItem(i) { S.splice(i, 1); sv(SK, S); renderS(); }
+function clearDone() { S = S.filter(function(x){ return !x.ok; }); sv(SK, S); renderS(); }
+function clearAll() { if(confirm('Svuotare tutta la lista?')){ S=[]; sv(SK,S); renderS(); } }
+
+function loadDiet() {
+  var def = [
+    // PROTEINE — dai menu del calendario
+    {n:'Petto di pollo',c:'Proteine'},
+    {n:'Fesa di tacchino',c:'Proteine'},
+    {n:'Bresaola',c:'Proteine'},
+    {n:'Merluzzo',c:'Proteine'},
+    {n:'Salmone fresco',c:'Proteine'},
+    {n:'Orata',c:'Proteine'},
+    {n:'Spigola',c:'Proteine'},
+    {n:'Tonno in acqua',c:'Proteine'},
+    {n:'Uova',c:'Proteine'},
+    // LATTICINI — dai menu del calendario
+    {n:'Latte parzialmente scremato',c:'Latticini'},
+    {n:'Yogurt naturale',c:'Latticini'},
+    {n:'Ricotta',c:'Latticini'},
+    {n:'Cottage cheese',c:'Latticini'},
+    {n:'Grana Padano',c:'Latticini'},
+    // LEGUMI — dai menu del calendario
+    {n:'Fagioli',c:'Legumi'},
+    {n:'Ceci',c:'Legumi'},
+    {n:'Lenticchie rosse',c:'Legumi'},
+    // CEREALI — dai menu del calendario, solo integrali
+    {n:'Pasta integrale',c:'Cereali'},
+    {n:'Riso integrale',c:'Cereali'},
+    {n:'Orzo',c:'Cereali'},
+    {n:'Farro',c:'Cereali'},
+    {n:'Quinoa',c:'Cereali'},
+    {n:'Polenta',c:'Cereali'},
+    {n:'Patate',c:'Cereali'},
+    {n:'Pane multicereali integrale',c:'Cereali'},
+    {n:'Fette biscottate integrali',c:'Cereali'},
+    {n:"Fiocchi d'avena",c:'Cereali'},
+    // VERDURE — dai menu del calendario, stagione marzo/aprile
+    {n:'Asparagi',c:'Verdure'},
+    {n:'Spinaci',c:'Verdure'},
+    {n:'Radicchio',c:'Verdure'},
+    {n:'Finocchio',c:'Verdure'},
+    {n:'Broccoli',c:'Verdure'},
+    {n:'Cavolfiore',c:'Verdure'},
+    {n:'Insalata mista',c:'Verdure'},
+    {n:'Indivia',c:'Verdure'},
+    {n:'Carote',c:'Verdure'},
+    {n:'Sedano',c:'Verdure'},
+    {n:'Cetriolo',c:'Verdure'},
+    {n:'Pomodori',c:'Verdure'},
+    {n:'Champignons',c:'Verdure'},
+    {n:'Peperoni',c:'Verdure'},
+    {n:'Zucchine',c:'Verdure'},
+    {n:'Fagiolini',c:'Verdure'},
+    {n:'Piselli surgelati',c:'Verdure'},
+    {n:'Cipolla',c:'Verdure'},
+    {n:'Aglio',c:'Verdure'},
+    // FRUTTA — dai menu del calendario, stagione marzo/aprile
+    {n:'Mele',c:'Frutta'},
+    {n:'Pere',c:'Frutta'},
+    {n:'Arance bionde',c:'Frutta'},
+    {n:'Kiwi',c:'Frutta'},
+    {n:'Banane',c:'Frutta'},
+    {n:'Mirtilli',c:'Frutta'},
+    {n:'Limoni',c:'Frutta'},
+    {n:'Mandarini',c:'Frutta'},
+    // CONDIMENTI
+    {n:"Olio extravergine d'oliva",c:'Altro'},
+    {n:'Basilico',c:'Altro'},
+    {n:'Prezzemolo',c:'Altro'},
+    {n:'Marmellata senza zucchero',c:'Altro'},
+    {n:'Miele',c:'Altro'},
+    {n:'Caffè',c:'Altro'},
+    {n:'Tè',c:'Altro'}
+  ];
+  var ex = {};
+  S.forEach(function(x){ ex[x.n] = true; });
+  var added = 0;
+  def.forEach(function(d){ if(!ex[d.n]){ S.push({n:d.n,c:d.c,ok:false}); added++; } });
+  sv(SK, S); renderS();
+  if (!added) alert('Lista dieta già caricata!');
+}
+
+function renderS() {
+  var el = document.getElementById('shop-list');
+  if (!S.length) { el.innerHTML = '<div class="empty">Lista vuota</div>'; return; }
+  var order = ['Proteine','Verdure','Frutta','Cereali','Latticini','Legumi','Altro'];
+  var cats = {};
+  S.forEach(function(it, i){ if(!cats[it.c]) cats[it.c]=[]; cats[it.c].push({it:it,i:i}); });
+  var keys = order.filter(function(c){ return cats[c]; })
+    .concat(Object.keys(cats).filter(function(c){ return order.indexOf(c)<0; }));
+  var html = '';
+  keys.forEach(function(cat) {
+    var items = cats[cat];
+    var left = items.filter(function(x){ return !x.it.ok; }).length;
+    html += '<div class="cat-h">'+cat+' ('+left+'/'+items.length+')</div>';
+    items.forEach(function(obj) {
+      html += '<div class="si-row'+(obj.it.ok?' done':'')+'"><input type="checkbox"'
+        +(obj.it.ok?' checked':'')
+        +' onchange="togItem('+obj.i+')">'
+        +'<span>'+obj.it.n+'</span>'
+        +'<button class="del-x" onclick="delItem('+obj.i+')">×</button></div>';
+    });
+  });
+  el.innerHTML = html;
+}
+
+/* ---- INIT ---- */
+function init() {
+  // Pulizia versioni vecchie
+  ['da_weights','da_meals','da_shop','da2_w','da2_m','da2_s','da3_w','da3_m','da3_s']
+    .forEach(function(k){ try{ localStorage.removeItem(k); }catch(e){} });
+
+  load();
+
+  // Rimuovi peso 83 inserito per errore, assicura 85.4
+  W = W.filter(function(x){ return x.w !== 83 && x.w !== 83.0; });
+  if (!W.some(function(x){ return x.d==='2026-03-29' && x.w===85.4; })) {
+    W.unshift({ d: '2026-03-29', w: 85.4 });
+  }
+  sv(WK, W);
+
+  renderW();
+  renderM();
+  renderS();
+}
+
+init();
+</script>
+</body>
+</html>
